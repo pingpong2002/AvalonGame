@@ -14,9 +14,7 @@ var app = express();
 var server = http.createServer(app);
 
 /* Defines what port to use to listen to web requests */
-var port = process.env.PORT
-			? parseInt(process.env.PORT)
-			: 8080;
+var port =  8080;
 
 
 /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
@@ -28,8 +26,7 @@ app.get('/form', (req, res, next) => {
 	/* Sends the html file back to the browser */
 	res.sendFile(filePath);
 });
-
-app.get('/', (req, res, next) => {
+app.get('/form', (req, res, next) => {
 	res.send('<a href="/form">Sign Up</a>');
 });
 
