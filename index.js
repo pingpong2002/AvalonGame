@@ -16,7 +16,7 @@ var server = http.createServer(app);
 /* Defines what port to use to listen to web requests */
 var port = process.env.port
 			? parseInt(process.env.PORT)
-			:8080;
+			: 8080;
 
 
 /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
