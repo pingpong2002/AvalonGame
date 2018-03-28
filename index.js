@@ -28,7 +28,7 @@ app.get('/form', (req, res, next) => {
 	/* Sends the html file back to the browser */
 	res.sendFile(filePath);
 });
-app.get('/form', (req, res, next) => {
+app.get('/', (req, res, next) => {
 	res.send('<a href="/form">Sign Up</a>');
 });
 
