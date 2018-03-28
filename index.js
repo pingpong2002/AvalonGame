@@ -29,8 +29,8 @@ app.get('/form', (req, res, next) => {
 	res.sendFile(filePath);
 });
 
-app.get('/dankmemes', (req, res, next) => {
-	res.send('<img src="http://1heurf2kk91pad4b23w0jddl.wpengine.netdna-cdn.com/wp-content/uploads/2017/04/United-Savage-Beating.jpg">');
+app.get('/', (req, res, next) => {
+	res.send('<a href="/form">Sign Up</a>');
 });
 
 
