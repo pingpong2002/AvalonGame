@@ -3,27 +3,59 @@
 	<head>
 		<title>Avalon</title>
 		<style>
-			#username, #password, #email {display: block;}
+			body {
+				background-image:url('https://i2.wp.com/www.theouterhaven.net/wp-content/uploads/2017/03/Resistance-Avalon.png?fit=1000%2C750');
+				background-size: 1000px 750px;
+			}
+			#form {
+				margin-left: 33vw;
+				width: 33vw;
+			}
+			#username, #password, #email {
+				display: block;
+				height: 5vh;
+			}
+			input {
+				width: 20vw;
+			}
+			button {
+			  background-color: #4CAF50;
+			  color: white;
+			  padding: 14px 20px;
+			  margin: 8px 0;
+			  border: none;
+			  cursor: pointer;
+			  width: 15%;
+			  opacity: 0.9;
+			}
+			button:hover {
+			  opacity:1;
+			}
+			h1 {text-align: center;}
+
 		</style>
 	</head>
 	<body>
+		<h1>Sign Up for Avalon</h1>
 		<div id="form">
-			<div id="username">
-			<label>Username</label>
-			<input type='text' name='username'>
-			</div>
+			<center>
+				<div id="username">
+				<label>Username</label>
+				<input type='text' name='username'>
+				</div>
 
-			<div id="password">
-			<label>Password</label>
-			<input type='text' name='password'>
-			</div>
+				<div id="password">
+				<label>Password</label>
+				<input type='text' name='password'>
+				</div>
 
-			<div id="email">
-			<label>Email</label>
-			<input type='text' name='email'>
-			</div>
+				<div id="email">
+				<label>Email</label>
+				<input type='text' name='email'>
+				</div>
 
-			<button>Submit</button>
+				<button>Submit</button>
+			</center>
 		</div>
 	</body>
 </html>
