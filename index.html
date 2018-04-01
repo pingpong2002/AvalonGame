@@ -5,7 +5,7 @@
 		<style>
 			body {
 				background-image:url('https://i2.wp.com/www.theouterhaven.net/wp-content/uploads/2017/03/Resistance-Avalon.png?fit=1000%2C750');
-				background-size: 1000px 750px;
+				background-size: cover;
 			}
 			#form {
 				margin-left: 33vw;
@@ -21,7 +21,7 @@
 			button {
 			  background-color: #4CAF50;
 			  color: white;
-			  padding: 14px 20px;
+			  padding: 10px;
 			  margin: 8px 0;
 			  border: none;
 			  cursor: pointer;
@@ -31,7 +31,8 @@
 			button:hover {
 			  opacity:1;
 			}
-			h1 {text-align: center;}
+			h1 {text-align: center; margin-top: 22vh;}
+			h1, label {color: white;}
 
 		</style>
 	</head>
@@ -49,13 +50,25 @@
 				<input type='text' name='password'>
 				</div>
 
-				<div id="email">
-				<label>Email</label>
-				<input type='text' name='email'>
-				</div>
-
 				<button>Submit</button>
 			</center>
 		</div>
+
+		<script>
+			var $inputs = document.querySelectorAll('input');
+			var $button = document.querySelector('button');
+
+			function storeData(){
+				var data = {};
+				for(var i=0; i < $inputs.length; i++){
+					var $input = $inputs[i];
+					data[$input.name] = $input.value
+				}
+
+			console.log(data);
+			}
+
+			$button.addEventListener('click', storeData);
+		</script>
 	</body>
 </html>
