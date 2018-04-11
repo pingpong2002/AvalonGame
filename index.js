@@ -1,6 +1,7 @@
 var bodyParser = require('body-parser');
 var usermodel = require('./user.js').getModel();
 var mongoose = require('mongoose');
+var crypto = require('crypto');
 /* The express module is used to look at the address of the request and send it to the correct function */
 var express = require('express');
 
@@ -23,6 +24,7 @@ var port = process.env.PORT
 var dbAddress = process.env.MONGODB_URI || 'mongodb://127.0.0.1/avalon';
 
 
+
 function startServer(){
   app.use(bodyParser.json({ limit: '16mb' }));
   /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
@@ -37,8 +39,39 @@ function startServer(){
 
   app.post('/form', (req, res, next) => {
     var newuser = new usermodel(req.body);
+
+    //Adding a random string to salt the password width
+    var salt = crypto.randomBytes(128).toString('base64');
+    newuser.salt = salt;
+    // Winding up the crypto hashing lock 10000 times
+  	var iterations = 10000;
+  	crypto.pbkdf2(password, salt, iterations, 256, 'sha256', function(err, hash) {
+  		if(err) {
+  			return res.send({error: err});
+  		}
+  		newuser.password = hash.toString('base64');
+  		// Saving the user object to the database
+  		newuser.save(function(err) {
+
+  			// Handling the duplicate key errors from database
+  			if(err && err.message.includes('duplicate key error') && err.message.includes('userName')) {
+  				return res.send({error: 'Username, ' + req.body.userName + 'already taken'});
+  			}
+  			if(err) {
+  				return res.send({error: err.message});
+  			}
+  			res.send({error: null});
+  		});
+  	});
     newuser.save(function(err) {
-      res.send(err || 'OK');
+      // Handling the duplicate key errors from database
+    	if(err && err.message.includes('duplicate key error') && err.message.includes('userName')) {
+    		return res.send({error: 'Username ' + 'already taken'})
+    	}
+    	if(err) {
+    		return res.send({error: err.message})
+    	}
+    	res.send({error: null});
     })
   })
 

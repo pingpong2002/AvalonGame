@@ -49,6 +49,10 @@
 				<label>Password</label>
 				<input type='password' name='password'>
 				</div>
+				<div>
+					<label>Verify Password</label>
+					<input type='password' name='verifyPassword'>
+				</div>
 
 				<button>Submit</button>
 			</center>
@@ -66,8 +70,21 @@
 				}
 				sendData(data);
 			}
+			function verifyPassword() {
 
+			  var $passwords = document.querySelectorAll('input[type="password"]');
+			  var isSamePassword = $passwords[0].value === $passwords[1].value;
+			  if(!isSamePassword) {
+			  	alert("Please enter the same password!")
+			  }
+			  return isSamePassword;
+
+			  }
 			function sendData(data){
+
+				if(!verifyPassword()) {
+					return;
+				}
 				//Creating a new request to the server that contains the sendData
 				var req = new XMLHttpRequest();
 
@@ -76,6 +93,17 @@
 
 				//Explain to the server that we are sending the data in json format
 				req.setRequestHeader('content-type', 'application/json');
+				// Alert the user to any errors from the server
+				function readyStateChange() {
+					if(req.readyState !== 4) return;
+					if(req.status !== 200) return;
+
+					data = JSON.parse(req.responseText);
+					if(data.error) {
+						alert(data.error);
+					}
+				}
+				req.onreadystatechange = readyStateChange;
 
 				//Sending the data in JSON format
 				req.send(JSON.stringify(data));
