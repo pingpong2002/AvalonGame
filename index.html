@@ -47,7 +47,7 @@
 
 				<div id="password">
 				<label>Password</label>
-				<input type='text' name='password'>
+				<input type='password' name='password'>
 				</div>
 
 				<button>Submit</button>
@@ -60,12 +60,25 @@
 
 			function storeData(){
 				var data = {};
-				for(var i=0; i < $inputs.length; i++){
+				for(var i = 0; i < $inputs.length; i++){
 					var $input = $inputs[i];
 					data[$input.name] = $input.value
 				}
+				sendData(data);
+			}
 
-			console.log(data);
+			function sendData(data){
+				//Creating a new request to the server that contains the sendData
+				var req = new XMLHttpRequest();
+
+				//Opening up a connection with the server to 'POST' sendData
+				req.open('POST', '/form', true);
+
+				//Explain to the server that we are sending the data in json format
+				req.setRequestHeader('content-type', 'application/json');
+
+				//Sending the data in JSON format
+				req.send(JSON.stringify(data));
 			}
 
 			$button.addEventListener('click', storeData);
