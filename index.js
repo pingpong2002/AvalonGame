@@ -61,3 +61,5 @@ function startServer(){
   /* Tells the server to start listening to requests from defined port */
   server.listen(port);
 }
+
+mongoose.connect(dbAddress, startServer)
