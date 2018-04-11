@@ -1,4 +1,5 @@
 var bodyParser = require('body-parser');
+var usermodel = require('./user.js').getModel();
 var mongoose = require('mongoose');
 /* The express module is used to look at the address of the request and send it to the correct function */
 var express = require('express');
@@ -35,13 +36,16 @@ function startServer(){
   });
 
   app.post('/form', (req, res, next) => {
-    console.log(req.body);
-    res.send('OK');
+    var newuser = new usermodel(req.body);
+    newuser.save(function(err) {
+      res.send(err || 'OK');
+    })
   })
 
   app.get('/', (req, res, next) => {
   	res.send('<a href="/form">Sign Up</a>');
   });
+
 
 
   /* Defines what function to all when the server recieves any request from http://localhost:8080 */
