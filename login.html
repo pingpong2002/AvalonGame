@@ -86,10 +86,10 @@
     function readyStateChange() {
       if(req.readyState !== 4) return;
       if(req.status !== 200) return;
-      data = JSON.parse(req.responseText);
-      if(data.error) {
-        return alert(data.error);
-      }
+      var data = JSON.parse(req.responseText);
+       if(data.error) {
+       return alert(data.error);
+       }
       window.location.href = '/game';
     }
     req.onreadystatechange = readyStateChange;

@@ -36,6 +36,20 @@ function addSockets() {
 }
 function startServer(){
   addSockets();
+  function verifyUser(username, password, callback) {
+    if(!username) return callback('No username given');
+    if(!password) return callback('No password given');
+    usermodel.findOne({userName: username}, (err, user) => {
+      if(err) return callback('Error connecting to database');
+      if(!user) return callback('Incorrect username');
+      crypto.pbkdf2(password, user.salt, 10000, 256, 'sha256', (err, resp) => {
+        if(err) return callback('Error handling password');
+        if(resp.toString('base64') === user.password) return callback(null);
+        callback ('Incorrect password');
+      })
+    });
+  }
+
   app.use(bodyParser.json({ limit: '16mb' }));
   app.use(express.static(path.join(__dirname, 'public')));
   /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
@@ -66,7 +80,7 @@ function startServer(){
 
   app.post('/form', (req, res, next) => {
     var newuser = new usermodel(req.body);
-
+    var password = req.body.password;
     //Adding a random string to salt the password width
     var salt = crypto.randomBytes(128).toString('base64');
     newuser.salt = salt;
@@ -95,7 +109,10 @@ function startServer(){
   app.post('/login', (req, res, next) => {
     var username = req.body.userName;
     var password = req.body.password;
-    res.send('OK');
+    verifyUser(username, password, function(error) {
+      res.send({error});
+    })
+
 
   });
 
