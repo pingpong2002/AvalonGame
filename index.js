@@ -22,16 +22,43 @@ var port = process.env.PORT
   			? parseInt(process.env.PORT)
   			: 8080;
 var dbAddress = process.env.MONGODB_URI || 'mongodb://127.0.0.1/avalon';
+var Io = require('socket.io');
+var io = Io(server);
+function addSockets() {
+	io.on('connection', (socket) => {
+		console.log('user connected')
 
+    socket.on('disconnect', () => {
+		console.log('user disconnected');
+	 })
+	})
 
-
+}
 function startServer(){
+  addSockets();
   app.use(bodyParser.json({ limit: '16mb' }));
+  app.use(express.static(path.join(__dirname, 'public')));
   /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
   app.get('/form', (req, res, next) => {
 
   	/* Get the absolute path of the html file */
   	var filePath = path.join(__dirname, './index.html')
+
+  	/* Sends the html file back to the browser */
+  	res.sendFile(filePath);
+  });
+  app.get('/login', (req, res, next) => {
+
+  	/* Get the absolute path of the html file */
+  	var filePath = path.join(__dirname, './login.html')
+
+  	/* Sends the html file back to the browser */
+  	res.sendFile(filePath);
+  });
+  app.get('/game', (req, res, next) => {
+
+  	/* Get the absolute path of the html file */
+  	var filePath = path.join(__dirname, './game.html')
 
   	/* Sends the html file back to the browser */
   	res.sendFile(filePath);
@@ -63,11 +90,17 @@ function startServer(){
   			res.send({error: null});
   		});
   	});
-    
+
   })
+  app.post('/login', (req, res, next) => {
+    var username = req.body.userName;
+    var password = req.body.password;
+    res.send('OK');
+
+  });
 
   app.get('/', (req, res, next) => {
-  	res.send('<a href="/form">Sign Up</a>');
+  	res.send('<a href="/form">Sign Up</a><br><a href="/login">Login</a>');
   });
 
 
