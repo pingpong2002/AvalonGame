@@ -1,6 +1,9 @@
 var bodyParser = require('body-parser');
 var usermodel = require('./user.js').getModel();
 var mongoose = require('mongoose');
+var session = require('express-session');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
 var crypto = require('crypto');
 /* The express module is used to look at the address of the request and send it to the correct function */
 var express = require('express');
@@ -26,10 +29,13 @@ var Io = require('socket.io');
 var io = Io(server);
 function addSockets() {
 	io.on('connection', (socket) => {
-		console.log('user connected')
+		io.emit("new message", 'user connected');
+    socket.on("message", (message) => {
+      io.emit("new message", message);
+    })
 
     socket.on('disconnect', () => {
-		console.log('user disconnected');
+		    io.emit("new message", 'user disconnected');
 	 })
 	})
 
@@ -49,9 +55,40 @@ function startServer(){
       })
     });
   }
+  function authenticateUser(username, password, callback) {
+
+  	if(!username) return callback('No username given');
+  	if(!password) return callback('No password given');
+  	usermodel.findOne({userName: username}, (err, user) => {
+  		if(err) return callback('Error connecting to database');
+  		if(!user) return callback('Incorrect username');
+  		crypto.pbkdf2(password, user.salt, 10000, 256, 'sha256', (err, resp) => {
+  			if(err) return callback('Error handling password');
+  			if(resp.toString('base64') === user.password) return callback(null, user);
+  			callback('Incorrect password');
+  		});
+  	});
+
+  }
 
   app.use(bodyParser.json({ limit: '16mb' }));
   app.use(express.static(path.join(__dirname, 'public')));
+  app.use(session({secret: '操你妈逼的'}));
+  app.use(passport.initialize());
+  app.use(passport.session());
+  passport.use(new LocalStrategy({usernameField: 'userName', passwordField: 'password'}, authenticateUser));
+
+  passport.serializeUser(function(user,done) {
+    done(null, user.id);
+
+  });
+
+  passport.deserializeUser(function(id, done) {
+    usermodel.findById(id, function(err, user) {
+      done(err, user);
+    });
+  });
+
   /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
   app.get('/form', (req, res, next) => {
 
@@ -70,12 +107,17 @@ function startServer(){
   	res.sendFile(filePath);
   });
   app.get('/game', (req, res, next) => {
-
+    if(!req.user) res.redirect('/login');
   	/* Get the absolute path of the html file */
   	var filePath = path.join(__dirname, './game.html')
 
   	/* Sends the html file back to the browser */
   	res.sendFile(filePath);
+  });
+
+  app.get('/logout', (req, res, next) => {
+    req.logOut();
+    res.redirect('/');
   });
 
   app.post('/form', (req, res, next) => {
@@ -105,15 +147,16 @@ function startServer(){
   		});
   	});
 
-  })
+  });
+
   app.post('/login', (req, res, next) => {
-    var username = req.body.userName;
-    var password = req.body.password;
-    verifyUser(username, password, function(error) {
-      res.send({error});
-    })
-
-
+    passport.authenticate('local', function(err, user) {
+      if(err) return res.send({error: err});
+      req.logIn(user, (err) => {
+        if(err) res.send({error: err});
+        res.send({error: null});
+      });
+    })(req, res, next);
   });
 
   app.get('/', (req, res, next) => {
