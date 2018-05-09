@@ -42,7 +42,9 @@
 			#chat button:hover {
 				font-size:2.2vmax;
 			}
-
+			#chat ul > li {
+				list-style-type: none;
+			}
 			#chat input {
 				position:absolute;
 				right:5vw;
@@ -74,20 +76,25 @@
 		</div>
     <script src='/js/socket.io.js'></script>
 		<script>
-      var socket = io();
+			var user = '{{USERNAME}}';
+      var socket = io({query: {user: user}});
 			var $button = document.querySelector('button');
 			var $input = document.querySelector('input');
-			$button.addEventListener('click', function() {
-				if($input.value) {
-					socket.emit('message', $input.value);
-					$input.value = '';
-				}
-			});
+			document.body.addEventListener('keypress', sendMessage);
+
+			$button.addEventListener('click', sendMessage);
+			function sendMessage(e) {
+				if(e.key && e.key !== 'Enter') return;
+				if(document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'BUTTON') return;
+				if($input.value === '') return;
+				socket.emit('message', {userName: user, message: $input.value});
+				$input.value = '';
+			};
 			socket.on('new message', function(message) {
 
 				var $ul = document.querySelector('#chat ul');
 				var $li = document.createElement('li');
-				$li.innerText = message;
+				$li.innerHTML = `<strong>${message.userName}:</strong> ${message.message}`;
 				$ul.appendChild($li)
 
 			});

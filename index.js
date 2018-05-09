@@ -5,6 +5,7 @@ var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var crypto = require('crypto');
+var fs = require('fs');
 /* The express module is used to look at the address of the request and send it to the correct function */
 var express = require('express');
 
@@ -29,15 +30,17 @@ var Io = require('socket.io');
 var io = Io(server);
 function addSockets() {
 	io.on('connection', (socket) => {
-		io.emit("new message", 'user connected');
-    socket.on("message", (message) => {
-      io.emit("new message", message);
-    })
+    var user = socket.handshake.query.user;
+    io.emit('new message', {userName: user, message: "entered the game"});
 
     socket.on('disconnect', () => {
-		    io.emit("new message", 'user disconnected');
-	 })
-	})
+		    io.emit('new message', {userName: user, message: "left the game"});
+    });
+      socket.on('message', (message) => {
+        io.emit("new message", message);
+
+	 });
+ });
 
 }
 function startServer(){
@@ -107,12 +110,13 @@ function startServer(){
   	res.sendFile(filePath);
   });
   app.get('/game', (req, res, next) => {
-    if(!req.user) res.redirect('/login');
+    if(!req.user) return res.redirect('/login');
   	/* Get the absolute path of the html file */
   	var filePath = path.join(__dirname, './game.html')
-
+    var fileContents = fs.readFileSync(filePath, 'utf8');
+    fileContents = fileContents.replace('{{USERNAME}}', req.user.userName);
   	/* Sends the html file back to the browser */
-  	res.sendFile(filePath);
+  	res.send(fileContents);
   });
 
   app.get('/logout', (req, res, next) => {
@@ -138,7 +142,7 @@ function startServer(){
 
   			// Handling the duplicate key errors from database
   			if(err && err.message.includes('duplicate key error') && err.message.includes('userName')) {
-  				return res.send({error: 'Username, ' + req.body.userName + 'already taken'});
+  				return res.send({error: 'Username, ' + req.body.userName + ' already taken'});
   			}
   			if(err) {
   				return res.send({error: err.message});
