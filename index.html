@@ -126,15 +126,15 @@
 				req.setRequestHeader('content-type', 'application/json');
 				// Alert the user to any errors from the server
 				function readyStateChange() {
-					if(req.readyState !== 4) return;
-					if(req.status !== 200) return;
-
-					data = JSON.parse(req.responseText);
-					if(data.error) {
-						alert(data.error);
-					}
-				}
-				req.onreadystatechange = readyStateChange;
+		      if(req.readyState !== 4) return;
+		      if(req.status !== 200) return;
+		      var data = JSON.parse(req.responseText);
+		       if(data.error) {
+		       return alert(data.error);
+		       }
+		      window.location.href = '/game';
+		    }
+		    req.onreadystatechange = readyStateChange;
 
 				//Sending the data in JSON format
 				req.send(JSON.stringify(data));
