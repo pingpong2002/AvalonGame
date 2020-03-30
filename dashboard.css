@@ -1,0 +1,110 @@
+#container {
+	height: 100%;
+	width: 100%;
+	display: grid;
+	grid-template-columns: 50% 50%;
+	grid-template-rows: 50% 50%;
+	grid-gap: 1em;
+}
+
+.tab {
+	width: 100%;
+	border: 2px solid #736cdb;
+	background-color: white;
+	height: 44.5vh;
+}
+
+#home {
+	height: 100%;
+}
+.timer {
+   font-size: 25px;
+   display: block;
+   width: 100%;
+   height: 25%;
+   margin: auto;
+   text-align: center;
+   padding-top: 1.75em;
+ }
+ 
+.timerDigit {
+  font-size: 50px;
+  max-width: 2em;
+  max-height: 5em;
+  padding: 0!important;
+  border: 2px solid #736cdb;
+  position:relative;
+  border-radius: 8px;
+  text-align: center;
+  padding: 0;
+  overflow: hidden;
+}
+
+.timerDigit, .timeMod {
+  outline: none;
+  display:inline-block;
+}
+
+ #subjectSelection {
+   display: block;
+   height: 25%;
+   padding-top: 40px;
+ }
+ 
+ .dropdown {
+   display: inline-block;
+   position: relative;
+   overflow: hidden;
+   height: 35px;
+   width: 150px;
+   background: #f2f2f2;
+   border: 1px solid;
+   border-color: white #f7f7f7 whitesmoke;
+   border-radius: 3px;
+   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+ }
+ 
+ .dropdown:before, .dropdown:after {
+   content: '';
+   position: absolute;
+   z-index: 2;
+   top: 9px;
+   right: 10px;
+   width: 0;
+   height: 0;
+   border: 4px dashed;
+   border-color: #888888 transparent;
+   pointer-events: none;
+ }
+
+ .dropdown:before {
+   border-bottom-style: solid;
+   border-top: none;
+ }
+
+ .dropdown:after {
+   margin-top: 7px;
+   border-top-style: solid;
+   border-bottom: none;
+ }
+ 
+ .dropdown-select {
+ 	font-size: 15px;
+ }
+
+.btn2 {
+	font-size: 15px;
+}
+ 
+ #controlCenter {
+   display: block;
+   margin: auto;
+   text-align: center;
+   height: 25%;
+   padding-top: 30px;
+ }
+ 
+ .timeMod {
+ 	font-size: 30px;
+ }
