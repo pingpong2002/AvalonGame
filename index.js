@@ -1,11 +1,13 @@
 var bodyParser = require('body-parser');
-var usermodel = require('./user.js').getModel();
+var ontrack = require('./ontrackSchema.js').getModel();
 var mongoose = require('mongoose');
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var crypto = require('crypto');
 var fs = require('fs');
+var Io = require('socket.io');
+var helper = require('./helper.js');
 /* The express module is used to look at the address of the request and send it to the correct function */
 var express = require('express');
 
@@ -26,7 +28,8 @@ var port = process.env.PORT
   			? parseInt(process.env.PORT)
   			: 8080;
 var dbAddress = process.env.MONGODB_URI || 'mongodb://127.0.0.1/avalon';
-var Io = require('socket.io');
+
+
 var io = Io(server);
 function addSockets() {
   var players = {};
@@ -41,19 +44,19 @@ function addSockets() {
     io.emit('playerUpdate', players);
     io.emit('new message', {userName: user, message: "entered the game"});
 
-      socket.on('disconnect', () => {
-          delete players[user];
-          io.emit('playerUpdate', players);
-  		    io.emit('new message', {userName: user, message: "left the game"});
-      });
-      socket.on('message', (message) => {
-        io.emit("new message", message);
-
-	    });
-      socket.on('playerUpdate', (player) => {
-        players[user] = player;
+    socket.on('disconnect', () => {
+        delete players[user];
         io.emit('playerUpdate', players);
-      });
+        io.emit('new message', {userName: user, message: "left the game"});
+    });
+    socket.on('message', (message) => {
+      io.emit("new message", message);
+
+    });
+    socket.on('playerUpdate', (player) => {
+      players[user] = player;
+      io.emit('playerUpdate', players);
+    });
  });
 
 };
@@ -62,7 +65,7 @@ function startServer(){
   function verifyUser(username, password, callback) {
     if(!username) return callback('No username given');
     if(!password) return callback('No password given');
-    usermodel.findOne({userName: username}, (err, user) => {
+    ontrack.findOne({userName: username}, (err, user) => {
       if(err) return callback('Error connecting to database');
       if(!user) return callback('Incorrect username');
       crypto.pbkdf2(password, user.salt, 10000, 256, 'sha256', (err, resp) => {
@@ -76,7 +79,7 @@ function startServer(){
 
   	if(!username) return callback('No username given');
   	if(!password) return callback('No password given');
-  	usermodel.findOne({userName: username}, (err, user) => {
+  	ontrack.findOne({userName: username}, (err, user) => {
   		if(err) return callback('Error connecting to database');
   		if(!user) return callback('Incorrect username');
   		crypto.pbkdf2(password, user.salt, 10000, 256, 'sha256', (err, resp) => {
@@ -90,6 +93,7 @@ function startServer(){
 
   app.use(bodyParser.json({ limit: '16mb' }));
   app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.json({ limit: '16mb' }))
   app.use(session({secret: '操你妈逼的'}));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -101,7 +105,7 @@ function startServer(){
   });
 
   passport.deserializeUser(function(id, done) {
-    usermodel.findById(id, function(err, user) {
+    ontrack.findById(id, function(err, user) {
       done(err, user);
     });
   });
@@ -117,7 +121,7 @@ function startServer(){
   });
   app.get('/picture/:username', (req, res, next) => {
     if(!req.user) return res.send('Not logged in!');
-    usermodel.findOne({userName: req.params.username}, function(err, user) {
+    ontrack.findOne({userName: req.params.username}, function(err, user) {
       if(err) return res.send(err);
       try {
         var imageType = user.avatar.match(/^data:image\/([a-zA-Z0-9]*);/)[1];
@@ -155,7 +159,7 @@ function startServer(){
   });
 
   app.post('/form', (req, res, next) => {
-    var newuser = new usermodel(req.body);
+    var newuser = new ontrack(req.body);
     var password = req.body.password;
     //Adding a random string to salt the password width
     var salt = crypto.randomBytes(128).toString('base64');
@@ -203,6 +207,56 @@ function startServer(){
   	res.send('<a href="/form">Sign Up</a><br><a href="/login">Login</a>');
   });
 
+  function getMasterFile(){
+    const masterpage = fs.readFileSync(path.join(__dirname, './master.html'), 'utf8');
+    return masterpage;
+  }
+  
+
+  app.get('/dashboard', (req, res, next) => {
+    const dashboardhtml = fs.readFileSync(path.join(__dirname, './dashboard.html'), 'utf8');
+    const dashboardcss = fs.readFileSync(path.join(__dirname, './dashboard.css'), 'utf8');
+    const master = helper.bindDataToTemplate(getMasterFile(), {
+      headername: 'Dashboard'
+      , contents: dashboardhtml
+      , contentcss: dashboardcss
+    })
+    res.send(master);
+  })
+
+  app.post('/sessiondata', (req, res, next) => {
+    console.log(req.body)
+    if(req.body.type == "start"){
+      ontrack.findOneAndUpdate(
+				{userName: req.params.username}
+				, {$push: {sessions: {
+					startDate: new Date()
+					, endDate: new Date(2020, 5, 13)
+					, subject: req.subject
+				}}}
+				, { upsert: false, new: true}
+				, (err, ontrack) => {
+					if(err) res.send(err);
+					res.send('success!');
+				}
+      )
+    }
+    
+    res.json({
+      status: "success"
+      , subject: req.body.subject
+      , time: req.body.time
+    })
+	
+  })
+  
+  app.get('/insession', (req, res, next) => {
+    ontrack.findOne({userName: req.params.username}, function(err, user){
+      res.send(req.body.subject, req.body.time);
+    })
+		
+	})
+
 
 
   /* Defines what function to all when the server recieves any request from http://localhost:8080 */
@@ -223,4 +277,6 @@ function startServer(){
   server.listen(port);
 }
 
+
 mongoose.connect(dbAddress, startServer)
+
